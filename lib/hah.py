@@ -133,9 +133,3 @@ class Hah(ircbot.SingleServerIRCBot):
             print "HTTPError :-("
             return
         print "probably successful."
-
-
-if __name__ == "__main__":
-    print 'test> instantiate.'
-    # add path?
-    hah = Hah('','','')
