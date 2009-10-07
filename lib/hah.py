@@ -14,7 +14,7 @@ from timing import timing
 class Hah(ircbot.SingleServerIRCBot):
     def __init__(self):
         # message matching this request are posted to twitter.
-        self.twitter_re = re.compile('^h[ae]h([,:]) (.*)')
+        self.twitter_re = re.compile('^h[ae]h([,:])? ?(.*)')
         self.twitterurl = "http://twitter.com/statuses/update.json"
 
         # load configuration.
