@@ -19,6 +19,7 @@ class Hah(ircbot.SingleServerIRCBot):
 
         # load configuration.
         self.nick, self.channel, self.server = self.load_conf()
+        self.twitteruser, self.twitterpass   = self.load_credentials()
 
         # init underlying ircbot.
         servers = [(self.server, 6667)]
@@ -33,11 +34,12 @@ class Hah(ircbot.SingleServerIRCBot):
         credentials = yaml.load(f)
         f.close()
         try:
-            self.twitteruser = credentials['twitteruser']
-            self.twitterpass = credentials['twitterpass']
+            twitteruser = credentials['twitteruser']
+            twitterpass = credentials['twitterpass']
         except KeyError, key:
             sys.stderr.write("yaml load failed for key %s.\n" % key)
             sys.exit(1)
+        return twitteruser, twitterpass
 
     # load irc configuration.
     def load_conf(self):
@@ -61,14 +63,7 @@ class Hah(ircbot.SingleServerIRCBot):
     def unleash(self):
         self.print_time()
         print 'unleashed.'
-        try:
-            self.load_credentials()
-        except:
-            # TODO: will never reach this; load_credentials does not raise.
-            sys.stderr.write("error loading credentials.\n")
-            sys.exit(1)
-        try:
-            self.start()
+        try:  self.start()
         except KeyboardInterrupt:
             print "hyorgh!"
             # TODO: issue slash quit.
@@ -92,7 +87,8 @@ class Hah(ircbot.SingleServerIRCBot):
         if e.arguments()[0] == 'ACTION':
             nick = irclib.nm_to_n(e.source())
             msg = e.arguments()[1]
-            update = nick + " " + msg
+            update = "%s %s" % (nick, msg)
+            update = unicode(update, "utf-8")
             thread.start_new_thread(self.twitter_post, (update,))
 
     @timing
@@ -109,6 +105,7 @@ class Hah(ircbot.SingleServerIRCBot):
         match = self.twitter_re.match(msg)
         if (match):
             update = "<%s> %s" % (nick, msg)
+            update = unicode(update, "utf-8")
             if (len(update) > 140):
                 print 'update too long; not posted.'
                 time.sleep(1) # simulate thought.
@@ -123,7 +120,7 @@ class Hah(ircbot.SingleServerIRCBot):
         auth = base64.b64encode(self.twitteruser+":"+self.twitterpass)
         headers["Authorization"] = "Basic " + auth
         headers["X-Twitter-Client"] = 'hah'
-        data = urllib.urlencode({"status" : update})
+        data = urllib.urlencode({"status" : update.encode("utf-8")})
         req = urllib2.Request(self.twitterurl, data, headers)
         try:
             print "attempting twitterpost: " + update
