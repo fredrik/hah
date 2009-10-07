@@ -93,7 +93,7 @@ class Hah(ircbot.SingleServerIRCBot):
             nick = irclib.nm_to_n(e.source())
             msg = e.arguments()[1]
             update = nick + " " + msg
-            thread.start_new.thread(self.twitter_post, update)
+            thread.start_new_thread(self.twitter_post, (update,))
 
     @timing
     def on_pubmsg(self, c, e):
@@ -101,8 +101,7 @@ class Hah(ircbot.SingleServerIRCBot):
         nick = irclib.nm_to_n(e.source())
         msg = e.arguments()[0]
         print "<%s%s> %s" % (nick, channel, msg)
-        #thread.start_new_thread(self.twitterism, (c, msg, nick, channel))
-        self.twitterism(c, msg, nick, channel)
+        thread.start_new_thread(self.twitterism, (c, msg, nick, channel))
 
     # parse message, react to messages matching regex.
     @timing
